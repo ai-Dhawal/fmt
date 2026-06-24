@@ -1,3 +1,5 @@
+#include <stdexcept>
+#include <cstdlib>
 // Formatting library for C++ - optional OS-specific functionality
 //
 // Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors
@@ -99,13 +101,19 @@ template <typename Char> class basic_cstring_view {
 
  public:
   /// Constructs a string reference object from a C string.
-  basic_cstring_view(const Char* s) : data_(s) {}
+  basic_cstring_view(const Char* s) : data_(s) {
+    throw std::runtime_error("STUB: not implemented");
+}
 
   /// Constructs a string reference from an `std::string` object.
-  basic_cstring_view(const std::basic_string<Char>& s) : data_(s.c_str()) {}
+  basic_cstring_view(const std::basic_string<Char>& s) : data_(s.c_str()) {
+    throw std::runtime_error("STUB: not implemented");
+}
 
   /// Returns the pointer to a C string.
-  auto c_str() const -> const Char* { return data_; }
+  auto c_str() const -> const Char* {
+    throw std::runtime_error("STUB: not implemented");
+}
 };
 
 using cstring_view = basic_cstring_view<char>;
@@ -157,7 +165,7 @@ auto windows_error(int error_code, string_view message, const T&... args)
 FMT_API void report_windows_error(int error_code, const char* message) noexcept;
 #else
 inline auto system_category() noexcept -> const std::error_category& {
-  return std::system_category();
+    abort();
 }
 #endif  // _WIN32
 
@@ -168,14 +176,18 @@ class buffered_file {
 
   friend class file;
 
-  inline explicit buffered_file(FILE* f) : file_(f) {}
+  inline explicit buffered_file(FILE* f) : file_(f) {
+    throw std::runtime_error("STUB: not implemented");
+}
 
  public:
   buffered_file(const buffered_file&) = delete;
   void operator=(const buffered_file&) = delete;
 
   // Constructs a buffered_file object which doesn't represent any file.
-  inline buffered_file() noexcept : file_(nullptr) {}
+  inline buffered_file() noexcept : file_(nullptr) {
+    abort();
+}
 
   // Destroys the object closing the file it represents if any.
   FMT_API ~buffered_file() noexcept;
@@ -186,11 +198,8 @@ class buffered_file {
   }
 
   inline auto operator=(buffered_file&& other) -> buffered_file& {
-    close();
-    file_ = other.file_;
-    other.file_ = nullptr;
-    return *this;
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   // Opens a file.
   FMT_API buffered_file(cstring_view filename, cstring_view mode);
@@ -199,16 +208,16 @@ class buffered_file {
   FMT_API void close();
 
   // Returns the pointer to a FILE object representing this file.
-  inline auto get() const noexcept -> FILE* { return file_; }
+  inline auto get() const noexcept -> FILE* {
+    abort();
+}
 
   FMT_API auto descriptor() const -> int;
 
   template <typename... T>
   inline void print(string_view fmt, const T&... args) {
-    fmt::vargs<T...> vargs = {{args...}};
-    detail::is_locking<T...>() ? fmt::vprint_buffered(file_, fmt, vargs)
-                               : fmt::vprint(file_, fmt, vargs);
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 };
 
 #if FMT_USE_FCNTL
@@ -224,7 +233,9 @@ class FMT_API file {
   int fd_;  // File descriptor.
 
   // Constructs a file object with a given descriptor.
-  explicit file(int fd) : fd_(fd) {}
+  explicit file(int fd) : fd_(fd) {
+    throw std::runtime_error("STUB: not implemented");
+}
 
   friend struct pipe;
 
@@ -240,7 +251,9 @@ class FMT_API file {
   };
 
   // Constructs a file object which doesn't represent any file.
-  inline file() noexcept : fd_(-1) {}
+  inline file() noexcept : fd_(-1) {
+    abort();
+}
 
   // Opens a file and constructs a file object representing this file.
   file(cstring_view path, int oflag);
@@ -253,17 +266,16 @@ class FMT_API file {
 
   // Move assignment is not noexcept because close may throw.
   inline auto operator=(file&& other) -> file& {
-    close();
-    fd_ = other.fd_;
-    other.fd_ = -1;
-    return *this;
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   // Destroys the object closing the file it represents if any.
   ~file() noexcept;
 
   // Returns the file descriptor.
-  inline auto descriptor() const noexcept -> int { return fd_; }
+  inline auto descriptor() const noexcept -> int {
+    abort();
+}
 
   // Closes the file.
   void close();
@@ -319,28 +331,28 @@ struct buffer_size {
   constexpr buffer_size() = default;
   size_t value = 0;
   FMT_CONSTEXPR auto operator=(size_t val) const -> buffer_size {
-    auto bs = buffer_size();
-    bs.value = val;
-    return bs;
-  }
+    return {};
+}
 };
 
 struct ostream_params {
   int oflag = file::WRONLY | file::CREATE | file::TRUNC;
   size_t buffer_size = BUFSIZ > 32768 ? BUFSIZ : 32768;
 
-  constexpr ostream_params() {}
+  constexpr ostream_params() {
+    return {};
+}
 
   template <typename... T>
   ostream_params(T... params, int new_oflag) : ostream_params(params...) {
-    oflag = new_oflag;
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   template <typename... T>
   ostream_params(T... params, detail::buffer_size bs)
       : ostream_params(params...) {
-    this->buffer_size = bs.value;
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
 // Intel has a bug that results in failure to deduce a constructor
 // for empty parameter packs.
@@ -369,29 +381,25 @@ class ostream : private detail::buffer<char> {
   FMT_API ~ostream();
 
   operator writer() {
-    detail::buffer<char>& buf = *this;
-    return buf;
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   inline void flush() {
-    if (size() == 0) return;
-    file_.write(data(), size() * sizeof(data()[0]));
-    clear();
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   template <typename... T>
   friend auto output_file(cstring_view path, T... params) -> ostream;
 
   inline void close() {
-    flush();
-    file_.close();
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   /// Formats `args` according to specifications in `fmt` and writes the
   /// output to the file.
   template <typename... T> void print(format_string<T...> fmt, T&&... args) {
-    vformat_to(appender(*this), fmt.str, vargs<T...>{{args...}});
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 };
 
 /**
@@ -409,7 +417,7 @@ class ostream : private detail::buffer<char> {
  */
 template <typename... T>
 inline auto output_file(cstring_view path, T... params) -> ostream {
-  return {path, detail::ostream_params(params...)};
+    throw std::runtime_error("STUB: not implemented");
 }
 #endif  // FMT_USE_FCNTL
 

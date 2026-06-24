@@ -1,3 +1,5 @@
+#include <stdexcept>
+#include <cstdlib>
 // Formatting library for C++ - color support
 //
 // Copyright (c) 2018 - present, Victor Zverovich and {fmt} contributors
@@ -190,14 +192,22 @@ enum class emphasis : uint8_t {
 // rgb is a struct for red, green and blue colors.
 // Using the name "rgb" makes some editors show the color in a tooltip.
 struct rgb {
-  constexpr rgb() : r(0), g(0), b(0) {}
-  constexpr rgb(uint8_t r_, uint8_t g_, uint8_t b_) : r(r_), g(g_), b(b_) {}
+  constexpr rgb() : r(0), g(0), b(0) {
+    return {};
+}
+  constexpr rgb(uint8_t r_, uint8_t g_, uint8_t b_) : r(r_), g(g_), b(b_) {
+    return {};
+}
   constexpr rgb(uint32_t hex)
-      : r((hex >> 16) & 0xFF), g((hex >> 8) & 0xFF), b(hex & 0xFF) {}
+      : r((hex >> 16) & 0xFF), g((hex >> 8) & 0xFF), b(hex & 0xFF) {
+    return {};
+}
   constexpr rgb(color hex)
       : r((uint32_t(hex) >> 16) & 0xFF),
         g((uint32_t(hex) >> 8) & 0xFF),
-        b(uint32_t(hex) & 0xFF) {}
+        b(uint32_t(hex) & 0xFF) {
+    return {};
+}
   uint8_t r;
   uint8_t g;
   uint8_t b;
@@ -210,23 +220,31 @@ namespace detail {
 struct color_type {
   constexpr color_type() noexcept = default;
   constexpr color_type(color rgb_color) noexcept
-      : value_(static_cast<uint32_t>(rgb_color) | (1 << 24)) {}
+      : value_(static_cast<uint32_t>(rgb_color) | (1 << 24)) {
+    return {};
+}
   constexpr color_type(rgb rgb_color) noexcept
       : color_type(static_cast<color>(
             (static_cast<uint32_t>(rgb_color.r) << 16) |
-            (static_cast<uint32_t>(rgb_color.g) << 8) | rgb_color.b)) {}
+            (static_cast<uint32_t>(rgb_color.g) << 8) | rgb_color.b)) {
+    return {};
+}
   constexpr color_type(terminal_color term_color) noexcept
-      : value_(static_cast<uint32_t>(term_color) | (3 << 24)) {}
+      : value_(static_cast<uint32_t>(term_color) | (3 << 24)) {
+    return {};
+}
 
   constexpr auto is_terminal_color() const noexcept -> bool {
-    return (value_ & (1 << 25)) != 0;
-  }
+    return {};
+}
 
   constexpr auto value() const noexcept -> uint32_t {
-    return value_ & 0xFFFFFF;
-  }
+    return {};
+}
 
-  constexpr color_type(uint32_t value) noexcept : value_(value) {}
+  constexpr color_type(uint32_t value) noexcept : value_(value) {
+    return {};
+}
 
   uint32_t value_ = 0;
 };
@@ -288,52 +306,50 @@ class text_style {
 
  public:
   FMT_CONSTEXPR text_style(emphasis em = emphasis()) noexcept
-      : style_(static_cast<uint64_t>(em) << 54) {}
+      : style_(static_cast<uint64_t>(em) << 54) {
+    return {};
+}
 
   FMT_CONSTEXPR auto operator|=(text_style rhs) -> text_style& {
-    if (((style_ + rhs.style_) & ((1ULL << 26) | (1ULL << 53))) != 0)
-      report_error("can't OR a terminal color");
-    style_ |= rhs.style_;
-    return *this;
-  }
+    return {};
+}
 
   friend FMT_CONSTEXPR auto operator|(text_style lhs, text_style rhs)
       -> text_style {
-    return lhs |= rhs;
-  }
+    return {};
+}
 
   FMT_CONSTEXPR auto operator==(text_style rhs) const noexcept -> bool {
-    return style_ == rhs.style_;
-  }
+    return {};
+}
 
   FMT_CONSTEXPR auto operator!=(text_style rhs) const noexcept -> bool {
-    return !(*this == rhs);
-  }
+    return {};
+}
 
   FMT_CONSTEXPR auto has_foreground() const noexcept -> bool {
-    return (style_ & (1 << 24)) != 0;
-  }
+    return {};
+}
   FMT_CONSTEXPR auto has_background() const noexcept -> bool {
-    return (style_ & (1ULL << 51)) != 0;
-  }
+    return {};
+}
   FMT_CONSTEXPR auto has_emphasis() const noexcept -> bool {
-    return (style_ >> 54) != 0;
-  }
+    return {};
+}
   FMT_CONSTEXPR auto get_foreground() const noexcept -> detail::color_type {
-    FMT_ASSERT(has_foreground(), "no foreground specified for this style");
-    return style_ & 0x3FFFFFF;
-  }
+    return {};
+}
   FMT_CONSTEXPR auto get_background() const noexcept -> detail::color_type {
-    FMT_ASSERT(has_background(), "no background specified for this style");
-    return (style_ >> 27) & 0x3FFFFFF;
-  }
+    return {};
+}
   FMT_CONSTEXPR auto get_emphasis() const noexcept -> emphasis {
-    FMT_ASSERT(has_emphasis(), "no emphasis specified for this style");
-    return static_cast<emphasis>(style_ >> 54);
-  }
+    return {};
+}
 
  private:
-  FMT_CONSTEXPR text_style(uint64_t style) noexcept : style_(style) {}
+  FMT_CONSTEXPR text_style(uint64_t style) noexcept : style_(style) {
+    return {};
+}
 
   friend FMT_CONSTEXPR auto fg(detail::color_type foreground) noexcept
       -> text_style;
@@ -347,18 +363,18 @@ class text_style {
 /// Creates a text style from the foreground (text) color.
 FMT_CONSTEXPR inline auto fg(detail::color_type foreground) noexcept
     -> text_style {
-  return foreground.value_;
+    return {};
 }
 
 /// Creates a text style from the background color.
 FMT_CONSTEXPR inline auto bg(detail::color_type background) noexcept
     -> text_style {
-  return static_cast<uint64_t>(background.value_) << 27;
+    return {};
 }
 
 FMT_CONSTEXPR inline auto operator|(emphasis lhs, emphasis rhs) noexcept
     -> text_style {
-  return text_style(lhs) | rhs;
+    return {};
 }
 
 namespace detail {
@@ -366,66 +382,21 @@ namespace detail {
 template <typename Char> struct ansi_color_escape {
   FMT_CONSTEXPR ansi_color_escape(color_type text_color,
                                   const char* esc) noexcept {
-    // If we have a terminal color, we need to output another escape code
-    // sequence.
-    if (text_color.is_terminal_color()) {
-      bool is_background = esc == string_view("\x1b[48;2;");
-      uint32_t value = text_color.value();
-      // Background ASCII codes are the same as the foreground ones but with
-      // 10 more.
-      if (is_background) value += 10u;
-
-      buffer[size++] = static_cast<Char>('\x1b');
-      buffer[size++] = static_cast<Char>('[');
-
-      if (value >= 100u) {
-        buffer[size++] = static_cast<Char>('1');
-        value %= 100u;
-      }
-      buffer[size++] = static_cast<Char>('0' + value / 10u);
-      buffer[size++] = static_cast<Char>('0' + value % 10u);
-
-      buffer[size++] = static_cast<Char>('m');
-      return;
-    }
-
-    for (int i = 0; i < 7; i++) {
-      buffer[i] = static_cast<Char>(esc[i]);
-    }
-    rgb color(text_color.value());
-    to_esc(color.r, buffer + 7, ';');
-    to_esc(color.g, buffer + 11, ';');
-    to_esc(color.b, buffer + 15, 'm');
-    size = 19;
-  }
+    return {};
+}
   FMT_CONSTEXPR ansi_color_escape(emphasis em) noexcept {
-    uint8_t em_codes[num_emphases] = {};
-    if (has_emphasis(em, emphasis::bold)) em_codes[0] = 1;
-    if (has_emphasis(em, emphasis::faint)) em_codes[1] = 2;
-    if (has_emphasis(em, emphasis::italic)) em_codes[2] = 3;
-    if (has_emphasis(em, emphasis::underline)) em_codes[3] = 4;
-    if (has_emphasis(em, emphasis::blink)) em_codes[4] = 5;
-    if (has_emphasis(em, emphasis::reverse)) em_codes[5] = 7;
-    if (has_emphasis(em, emphasis::conceal)) em_codes[6] = 8;
-    if (has_emphasis(em, emphasis::strikethrough)) em_codes[7] = 9;
+    return {};
+}
+  FMT_CONSTEXPR operator const Char*() const noexcept {
+    return {};
+}
 
-    buffer[size++] = static_cast<Char>('\x1b');
-    buffer[size++] = static_cast<Char>('[');
-
-    for (size_t i = 0; i < num_emphases; ++i) {
-      if (!em_codes[i]) continue;
-      buffer[size++] = static_cast<Char>('0' + em_codes[i]);
-      buffer[size++] = static_cast<Char>(';');
-    }
-
-    buffer[size - 1] = static_cast<Char>('m');
-  }
-  FMT_CONSTEXPR operator const Char*() const noexcept { return buffer; }
-
-  FMT_CONSTEXPR auto begin() const noexcept -> const Char* { return buffer; }
+  FMT_CONSTEXPR auto begin() const noexcept -> const Char* {
+    return {};
+}
   FMT_CONSTEXPR auto end() const noexcept -> const Char* {
-    return buffer + size;
-  }
+    return {};
+}
 
  private:
   static constexpr size_t num_emphases = 8;
@@ -434,70 +405,53 @@ template <typename Char> struct ansi_color_escape {
 
   static FMT_CONSTEXPR void to_esc(uint8_t c, Char* out,
                                    char delimiter) noexcept {
-    out[0] = static_cast<Char>('0' + c / 100);
-    out[1] = static_cast<Char>('0' + c / 10 % 10);
-    out[2] = static_cast<Char>('0' + c % 10);
-    out[3] = static_cast<Char>(delimiter);
-  }
+    return {};
+}
   static FMT_CONSTEXPR auto has_emphasis(emphasis em, emphasis mask) noexcept
       -> bool {
-    return static_cast<uint8_t>(em) & static_cast<uint8_t>(mask);
-  }
+    return {};
+}
 };
 
 template <typename Char>
 FMT_CONSTEXPR auto make_foreground_color(color_type foreground) noexcept
     -> ansi_color_escape<Char> {
-  return ansi_color_escape<Char>(foreground, "\x1b[38;2;");
+    return {};
 }
 
 template <typename Char>
 FMT_CONSTEXPR auto make_background_color(color_type background) noexcept
     -> ansi_color_escape<Char> {
-  return ansi_color_escape<Char>(background, "\x1b[48;2;");
+    return {};
 }
 
 template <typename Char>
 FMT_CONSTEXPR auto make_emphasis(emphasis em) noexcept
     -> ansi_color_escape<Char> {
-  return ansi_color_escape<Char>(em);
+    return {};
 }
 
 template <typename Char> inline void reset_color(buffer<Char>& buffer) {
-  auto reset_color = string_view("\x1b[0m");
-  buffer.append(reset_color.begin(), reset_color.end());
+    throw std::runtime_error("STUB: not implemented");
 }
 
 template <typename T> struct styled_arg : view {
   const T& value;
   text_style style;
-  FMT_CONSTEXPR styled_arg(const T& v, text_style s) : value(v), style(s) {}
+  FMT_CONSTEXPR styled_arg(const T& v, text_style s) : value(v), style(s) {
+    return {};
+}
 };
 
 template <typename Char>
 void vformat_to(buffer<Char>& buf, text_style ts, basic_string_view<Char> fmt,
                 basic_format_args<buffered_context<Char>> args) {
-  if (ts.has_emphasis()) {
-    auto emphasis = make_emphasis<Char>(ts.get_emphasis());
-    buf.append(emphasis.begin(), emphasis.end());
-  }
-  if (ts.has_foreground()) {
-    auto foreground = make_foreground_color<Char>(ts.get_foreground());
-    buf.append(foreground.begin(), foreground.end());
-  }
-  if (ts.has_background()) {
-    auto background = make_background_color<Char>(ts.get_background());
-    buf.append(background.begin(), background.end());
-  }
-  vformat_to(buf, fmt, args);
-  if (ts != text_style()) reset_color<Char>(buf);
+    throw std::runtime_error("STUB: not implemented");
 }
 }  // namespace detail
 
 inline void vprint(FILE* f, text_style ts, string_view fmt, format_args args) {
-  auto buf = memory_buffer();
-  detail::vformat_to(buf, ts, fmt, args);
-  print(f, FMT_STRING("{}"), string_view(buf.begin(), buf.size()));
+    throw std::runtime_error("STUB: not implemented");
 }
 
 /**
@@ -511,7 +465,7 @@ inline void vprint(FILE* f, text_style ts, string_view fmt, format_args args) {
  */
 template <typename... T>
 void print(FILE* f, text_style ts, format_string<T...> fmt, T&&... args) {
-  vprint(f, ts, fmt.str, vargs<T...>{{args...}});
+    throw std::runtime_error("STUB: not implemented");
 }
 
 /**
@@ -525,15 +479,12 @@ void print(FILE* f, text_style ts, format_string<T...> fmt, T&&... args) {
  */
 template <typename... T>
 void print(text_style ts, format_string<T...> fmt, T&&... args) {
-  return print(stdout, ts, fmt, std::forward<T>(args)...);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 inline void vprintln(FILE* f, text_style ts, string_view fmt,
                      format_args args) {
-  auto buf = memory_buffer();
-  detail::vformat_to(buf, ts, fmt, args);
-  buf.push_back('\n');
-  print(f, FMT_STRING("{}"), string_view(buf.begin(), buf.size()));
+    throw std::runtime_error("STUB: not implemented");
 }
 
 /**
@@ -547,7 +498,7 @@ inline void vprintln(FILE* f, text_style ts, string_view fmt,
  */
 template <typename... T>
 void println(FILE* f, text_style ts, format_string<T...> fmt, T&&... args) {
-  vprintln(f, ts, fmt.str, vargs<T...>{{args...}});
+    throw std::runtime_error("STUB: not implemented");
 }
 
 /**
@@ -561,14 +512,12 @@ void println(FILE* f, text_style ts, format_string<T...> fmt, T&&... args) {
  */
 template <typename... T>
 void println(text_style ts, format_string<T...> fmt, T&&... args) {
-  return println(stdout, ts, fmt, std::forward<T>(args)...);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 inline auto vformat(text_style ts, string_view fmt, format_args args)
     -> std::string {
-  auto buf = memory_buffer();
-  detail::vformat_to(buf, ts, fmt, args);
-  return fmt::to_string(buf);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 /**
@@ -586,7 +535,7 @@ inline auto vformat(text_style ts, string_view fmt, format_args args)
 template <typename... T>
 inline auto format(text_style ts, format_string<T...> fmt, T&&... args)
     -> std::string {
-  return fmt::vformat(ts, fmt.str, vargs<T...>{{args...}});
+    throw std::runtime_error("STUB: not implemented");
 }
 
 /// Formats a string with the given text_style and writes the output to `out`.
@@ -594,9 +543,7 @@ template <typename OutputIt,
           FMT_ENABLE_IF(detail::is_output_iterator<OutputIt, char>::value)>
 auto vformat_to(OutputIt out, text_style ts, string_view fmt, format_args args)
     -> OutputIt {
-  auto&& buf = detail::get_buffer<char>(out);
-  detail::vformat_to(buf, ts, fmt, args);
-  return detail::get_iterator(buf, out);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 /**
@@ -613,7 +560,7 @@ template <typename OutputIt, typename... T,
           FMT_ENABLE_IF(detail::is_output_iterator<OutputIt, char>::value)>
 inline auto format_to(OutputIt out, text_style ts, format_string<T...> fmt,
                       T&&... args) -> OutputIt {
-  return vformat_to(out, ts, fmt.str, vargs<T...>{{args...}});
+    throw std::runtime_error("STUB: not implemented");
 }
 
 template <typename T, typename Char>
@@ -664,7 +611,7 @@ struct formatter<detail::styled_arg<T>, Char> : formatter<T, Char> {
 template <typename T>
 FMT_CONSTEXPR auto styled(const T& value, text_style ts)
     -> detail::styled_arg<remove_cvref_t<T>> {
-  return detail::styled_arg<remove_cvref_t<T>>{value, ts};
+    return {};
 }
 
 FMT_END_EXPORT

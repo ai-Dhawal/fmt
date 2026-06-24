@@ -1,3 +1,5 @@
+#include <stdexcept>
+#include <cstdlib>
 // Formatting library for C++ - range and tuple support
 //
 // Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors
@@ -53,10 +55,10 @@ template <typename T> class is_set {
 // C array overload
 template <typename T, size_t N>
 auto range_begin(const T (&arr)[N]) -> const T* {
-  return arr;
+    throw std::runtime_error("STUB: not implemented");
 }
 template <typename T, size_t N> auto range_end(const T (&arr)[N]) -> const T* {
-  return arr + N;
+    throw std::runtime_error("STUB: not implemented");
 }
 
 template <typename T, typename Enable = void>
@@ -71,11 +73,11 @@ struct has_member_fn_begin_end_t<T, void_t<decltype(*std::declval<T>().begin()),
 template <typename T>
 FMT_CONSTEXPR auto range_begin(T&& rng)
     -> decltype(static_cast<T&&>(rng).begin()) {
-  return static_cast<T&&>(rng).begin();
+    return {};
 }
 template <typename T>
 FMT_CONSTEXPR auto range_end(T&& rng) -> decltype(static_cast<T&&>(rng).end()) {
-  return static_cast<T&&>(rng).end();
+    return {};
 }
 
 // ADL overloads. Only participate in overload resolution if member functions
@@ -84,12 +86,12 @@ template <typename T>
 auto range_begin(T&& rng)
     -> enable_if_t<!has_member_fn_begin_end_t<T&&>::value,
                    decltype(begin(static_cast<T&&>(rng)))> {
-  return begin(static_cast<T&&>(rng));
+    throw std::runtime_error("STUB: not implemented");
 }
 template <typename T>
 auto range_end(T&& rng) -> enable_if_t<!has_member_fn_begin_end_t<T&&>::value,
                                        decltype(end(static_cast<T&&>(rng)))> {
-  return end(static_cast<T&&>(rng));
+    throw std::runtime_error("STUB: not implemented");
 }
 
 template <typename T, typename Enable = void>
@@ -189,30 +191,22 @@ template <typename T, typename C> class is_tuple_formattable_<T, C, true> {
 
 template <typename Tuple, typename F, size_t... Is>
 FMT_CONSTEXPR void for_each(index_sequence<Is...>, Tuple&& t, F&& f) {
-  using std::get;
-  // Using a free function get<Is>(Tuple) now.
-  const int unused[] = {0, ((void)f(get<Is>(t)), 0)...};
-  ignore_unused(unused);
+    return {};
 }
 
 template <typename Tuple, typename F>
 FMT_CONSTEXPR void for_each(Tuple&& t, F&& f) {
-  for_each(tuple_index_sequence<remove_cvref_t<Tuple>>(),
-           std::forward<Tuple>(t), std::forward<F>(f));
+    return {};
 }
 
 template <typename Tuple1, typename Tuple2, typename F, size_t... Is>
 void for_each2(index_sequence<Is...>, Tuple1&& t1, Tuple2&& t2, F&& f) {
-  using std::get;
-  const int unused[] = {0, ((void)f(get<Is>(t1), get<Is>(t2)), 0)...};
-  ignore_unused(unused);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 template <typename Tuple1, typename Tuple2, typename F>
 void for_each2(Tuple1&& t1, Tuple2&& t2, F&& f) {
-  for_each2(tuple_index_sequence<remove_cvref_t<Tuple1>>(),
-            std::forward<Tuple1>(t1), std::forward<Tuple2>(t2),
-            std::forward<F>(f));
+    throw std::runtime_error("STUB: not implemented");
 }
 
 namespace tuple {
@@ -264,9 +258,8 @@ using range_format_constant = std::integral_constant<range_format, K>;
 // These are not generic lambdas for compatibility with C++11.
 template <typename Char> struct parse_empty_specs {
   template <typename Formatter> FMT_CONSTEXPR void operator()(Formatter& f) {
-    f.parse(ctx);
-    detail::maybe_set_debug_format(f, true);
-  }
+    return {};
+}
   parse_context<Char>& ctx;
 };
 template <typename FormatContext> struct format_tuple_element {
@@ -274,10 +267,8 @@ template <typename FormatContext> struct format_tuple_element {
 
   template <typename T>
   void operator()(const formatter<T, char_type>& f, const T& v) {
-    if (i > 0) ctx.advance_to(detail::copy<char_type>(separator, ctx.out()));
-    ctx.advance_to(f.format(v, ctx));
-    ++i;
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   int i;
   FormatContext& ctx;
@@ -636,7 +627,9 @@ struct join_view : detail::view {
   basic_string_view<Char> sep;
 
   FMT_CONSTEXPR join_view(It b, Sentinel e, basic_string_view<Char> s)
-      : begin(std::move(b)), end(e), sep(s) {}
+      : begin(std::move(b)), end(e), sep(s) {
+    return {};
+}
 };
 
 template <typename It, typename Sentinel, typename Char>
@@ -687,7 +680,9 @@ template <typename Tuple, typename Char> struct tuple_join_view : detail::view {
   basic_string_view<Char> sep;
 
   FMT_CONSTEXPR tuple_join_view(const Tuple& t, basic_string_view<Char> s)
-      : tuple(t), sep{s} {}
+      : tuple(t), sep{s} {
+    return {};
+}
 };
 
 // Define FMT_TUPLE_JOIN_SPECIFIERS to enable experimental format specifiers
@@ -764,8 +759,12 @@ struct formatter<tuple_join_view<Tuple, Char>, Char,
 namespace detail {
 template <typename Container> struct all {
   const Container& c;
-  auto begin() const -> typename Container::const_iterator { return c.begin(); }
-  auto end() const -> typename Container::const_iterator { return c.end(); }
+  auto begin() const -> typename Container::const_iterator {
+    throw std::runtime_error("STUB: not implemented");
+}
+  auto end() const -> typename Container::const_iterator {
+    throw std::runtime_error("STUB: not implemented");
+}
 };
 }  // namespace detail
 
@@ -809,7 +808,7 @@ FMT_BEGIN_EXPORT
 /// separated by `sep`.
 template <typename It, typename Sentinel>
 auto join(It begin, Sentinel end, string_view sep) -> join_view<It, Sentinel> {
-  return {std::move(begin), end, sep};
+    throw std::runtime_error("STUB: not implemented");
 }
 
 /**
@@ -830,7 +829,7 @@ template <typename Range, FMT_ENABLE_IF(!is_tuple_like<Range>::value)>
 FMT_CONSTEXPR auto join(Range&& r, string_view sep)
     -> join_view<decltype(detail::range_begin(r)),
                  decltype(detail::range_end(r))> {
-  return {detail::range_begin(r), detail::range_end(r), sep};
+    return {};
 }
 
 /**
@@ -845,7 +844,7 @@ FMT_CONSTEXPR auto join(Range&& r, string_view sep)
 template <typename Tuple, FMT_ENABLE_IF(is_tuple_like<Tuple>::value)>
 FMT_CONSTEXPR auto join(const Tuple& tuple FMT_LIFETIMEBOUND, string_view sep)
     -> tuple_join_view<Tuple, char> {
-  return {tuple, sep};
+    return {};
 }
 
 /**
@@ -860,7 +859,7 @@ FMT_CONSTEXPR auto join(const Tuple& tuple FMT_LIFETIMEBOUND, string_view sep)
 template <typename T>
 FMT_DEPRECATED auto join(std::initializer_list<T> list, string_view sep)
     -> join_view<const T*, const T*> {
-  return join(std::begin(list), std::end(list), sep);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 FMT_END_EXPORT

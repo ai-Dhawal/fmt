@@ -1,3 +1,5 @@
+#include <stdexcept>
+#include <cstdlib>
 // Formatting library for C++ - optional OS-specific functionality
 //
 // Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors
@@ -124,7 +126,9 @@ class utf8_system_category final : public std::error_category {
 // Return type of read and write functions.
 using rwresult = ssize_t;
 
-inline auto convert_rwcount(size_t count) -> size_t { return count; }
+inline auto convert_rwcount(size_t count) -> size_t {
+    throw std::runtime_error("STUB: not implemented");
+}
 
 #endif
 }  // namespace
@@ -173,36 +177,15 @@ buffered_file::~buffered_file() noexcept {
 }
 
 buffered_file::buffered_file(cstring_view filename, cstring_view mode) {
-  FMT_RETRY_VAL(file_, FMT_SYSTEM(fopen(filename.c_str(), mode.c_str())),
-                nullptr);
-  if (!file_)
-    FMT_THROW(system_error(errno, FMT_STRING("cannot open file {}"),
-                           filename.c_str()));
+    throw std::runtime_error("STUB: not implemented");
 }
 
 void buffered_file::close() {
-  if (!file_) return;
-  int result = FMT_SYSTEM(fclose(file_));
-  file_ = nullptr;
-  if (result != 0)
-    FMT_THROW(system_error(errno, FMT_STRING("cannot close file")));
+    throw std::runtime_error("STUB: not implemented");
 }
 
 auto buffered_file::descriptor() const -> int {
-#ifdef FMT_HAS_SYSTEM
-  // fileno is a macro on OpenBSD.
-#  ifdef fileno
-#    undef fileno
-#  endif
-  int fd = FMT_POSIX_CALL(fileno(file_));
-#elif defined(_WIN32)
-  int fd = _fileno(file_);
-#else
-  int fd = fileno(file_);
-#endif
-  if (fd == -1)
-    FMT_THROW(system_error(errno, FMT_STRING("cannot get file descriptor")));
-  return fd;
+    throw std::runtime_error("STUB: not implemented");
 }
 
 #if FMT_USE_FCNTL
@@ -214,16 +197,7 @@ constexpr mode_t default_open_mode =
     S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 
 file::file(cstring_view path, int oflag) {
-#  if defined(_WIN32) && !defined(__MINGW32__)
-  fd_ = -1;
-  auto converted = detail::utf8_to_utf16(string_view(path.c_str()));
-  *this = file::open_windows_file(converted.c_str(), oflag);
-#  else
-  FMT_RETRY(fd_, FMT_POSIX_CALL(open(path.c_str(), oflag, default_open_mode)));
-  if (fd_ == -1)
-    FMT_THROW(
-        system_error(errno, FMT_STRING("cannot open file {}"), path.c_str()));
-#  endif
+    throw std::runtime_error("STUB: not implemented");
 }
 
 file::~file() noexcept {
@@ -234,97 +208,35 @@ file::~file() noexcept {
 }
 
 void file::close() {
-  if (fd_ == -1) return;
-  // Don't retry close in case of EINTR!
-  // See http://linux.derkeiler.com/Mailing-Lists/Kernel/2005-09/3000.html
-  int result = FMT_POSIX_CALL(close(fd_));
-  fd_ = -1;
-  if (result != 0)
-    FMT_THROW(system_error(errno, FMT_STRING("cannot close file")));
+    throw std::runtime_error("STUB: not implemented");
 }
 
 auto file::size() const -> long long {
-#  ifdef _WIN32
-  // Use GetFileSize instead of GetFileSizeEx for the case when _WIN32_WINNT
-  // is less than 0x0500 as is the case with some default MinGW builds.
-  // Both functions support large file sizes.
-  DWORD size_upper = 0;
-  HANDLE handle = reinterpret_cast<HANDLE>(_get_osfhandle(fd_));
-  DWORD size_lower = FMT_SYSTEM(GetFileSize(handle, &size_upper));
-  if (size_lower == INVALID_FILE_SIZE) {
-    DWORD error = GetLastError();
-    if (error != NO_ERROR)
-      FMT_THROW(windows_error(error, "cannot get file size"));
-  }
-  unsigned long long long_size = size_upper;
-  return (long_size << sizeof(DWORD) * CHAR_BIT) | size_lower;
-#  else
-  using Stat = struct stat;
-  Stat file_stat = Stat();
-  if (FMT_POSIX_CALL(fstat(fd_, &file_stat)) == -1)
-    FMT_THROW(system_error(errno, FMT_STRING("cannot get file attributes")));
-  static_assert(sizeof(long long) >= sizeof(file_stat.st_size),
-                "return type of file::size is not large enough");
-  return file_stat.st_size;
-#  endif
+    throw std::runtime_error("STUB: not implemented");
 }
 
 auto file::read(void* buffer, size_t count) -> size_t {
-  rwresult result = 0;
-  FMT_RETRY(result, FMT_POSIX_CALL(read(fd_, buffer, convert_rwcount(count))));
-  if (result < 0)
-    FMT_THROW(system_error(errno, FMT_STRING("cannot read from file")));
-  return detail::to_unsigned(result);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 auto file::write(const void* buffer, size_t count) -> size_t {
-  rwresult result = 0;
-  FMT_RETRY(result, FMT_POSIX_CALL(write(fd_, buffer, convert_rwcount(count))));
-  if (result < 0)
-    FMT_THROW(system_error(errno, FMT_STRING("cannot write to file")));
-  return detail::to_unsigned(result);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 auto file::dup(int fd) -> file {
-  // Don't retry as dup doesn't return EINTR.
-  // http://pubs.opengroup.org/onlinepubs/009695399/functions/dup.html
-  int new_fd = FMT_POSIX_CALL(dup(fd));
-  if (new_fd == -1)
-    FMT_THROW(system_error(
-        errno, FMT_STRING("cannot duplicate file descriptor {}"), fd));
-  return file(new_fd);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 void file::dup2(int fd) {
-  int result = 0;
-  FMT_RETRY(result, FMT_POSIX_CALL(dup2(fd_, fd)));
-  if (result == -1) {
-    FMT_THROW(system_error(
-        errno, FMT_STRING("cannot duplicate file descriptor {} to {}"), fd_,
-        fd));
-  }
+    throw std::runtime_error("STUB: not implemented");
 }
 
 void file::dup2(int fd, std::error_code& ec) noexcept {
-  int result = 0;
-  FMT_RETRY(result, FMT_POSIX_CALL(dup2(fd_, fd)));
-  if (result == -1) ec = std::error_code(errno, std::generic_category());
+    abort();
 }
 
 auto file::fdopen(const char* mode) -> buffered_file {
-// Don't retry as fdopen doesn't return EINTR.
-#  if defined(__MINGW32__) && defined(_POSIX_)
-  FILE* f = ::fdopen(fd_, mode);
-#  else
-  FILE* f = FMT_POSIX_CALL(fdopen(fd_, mode));
-#  endif
-  if (!f) {
-    FMT_THROW(system_error(
-        errno, FMT_STRING("cannot associate stream with file descriptor")));
-  }
-  buffered_file bf(f);
-  fd_ = -1;
-  return bf;
+    throw std::runtime_error("STUB: not implemented");
 }
 
 #  if defined(_WIN32) && !defined(__MINGW32__)
@@ -340,50 +252,22 @@ file file::open_windows_file(wcstring_view path, int oflag) {
 #  endif
 
 pipe::pipe() {
-  int fds[2] = {};
-#  ifdef _WIN32
-  // Make the default pipe capacity same as on Linux 2.6.11+.
-  enum { DEFAULT_CAPACITY = 65536 };
-  int result = FMT_POSIX_CALL(pipe(fds, DEFAULT_CAPACITY, _O_BINARY));
-#  else
-  // Don't retry as the pipe function doesn't return EINTR.
-  // http://pubs.opengroup.org/onlinepubs/009696799/functions/pipe.html
-  int result = FMT_POSIX_CALL(pipe(fds));
-#  endif
-  if (result != 0)
-    FMT_THROW(system_error(errno, FMT_STRING("cannot create pipe")));
-  // The following assignments don't throw.
-  read_end = file(fds[0]);
-  write_end = file(fds[1]);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 #  if !defined(__MSDOS__)
 auto getpagesize() -> long {
-#    ifdef _WIN32
-  SYSTEM_INFO si;
-  GetSystemInfo(&si);
-  return si.dwPageSize;
-#    else
-#      ifdef _WRS_KERNEL
-  long size = FMT_POSIX_CALL(getpagesize());
-#      else
-  long size = FMT_POSIX_CALL(sysconf(_SC_PAGESIZE));
-#      endif
-
-  if (size < 0)
-    FMT_THROW(system_error(errno, FMT_STRING("cannot get memory page size")));
-  return size;
-#    endif
+    throw std::runtime_error("STUB: not implemented");
 }
 #  endif
 
 void ostream::grow(buffer<char>& buf, size_t) {
-  if (buf.size() == buf.capacity()) static_cast<ostream&>(buf).flush();
+    throw std::runtime_error("STUB: not implemented");
 }
 
 ostream::ostream(cstring_view path, const detail::ostream_params& params)
     : buffer<char>(grow), file_(path, params.oflag) {
-  set(new char[params.buffer_size], params.buffer_size);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 ostream::ostream(ostream&& other) noexcept

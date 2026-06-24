@@ -1,3 +1,5 @@
+#include <stdexcept>
+#include <cstdlib>
 // Formatting library for C++ - experimental format string compilation
 //
 // Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors
@@ -66,7 +68,7 @@ namespace detail {
 
 template <typename T, typename... Tail>
 constexpr auto first(const T& value, const Tail&...) -> const T& {
-  return value;
+    return {};
 }
 
 #if defined(__cpp_if_constexpr) && defined(__cpp_return_type_deduction)
@@ -533,32 +535,25 @@ template <typename OutputIt, typename S, typename... T,
           FMT_ENABLE_IF(is_compiled_string<S>::value)>
 auto format_to_n(OutputIt out, size_t n, const S& fmt, T&&... args)
     -> format_to_n_result<OutputIt> {
-  using traits = detail::fixed_buffer_traits;
-  auto buf = detail::iterator_buffer<OutputIt, char, traits>(out, n);
-  fmt::format_to(appender(buf), fmt, std::forward<T>(args)...);
-  return {buf.out(), buf.count()};
+    throw std::runtime_error("STUB: not implemented");
 }
 
 template <typename S, typename... T,
           FMT_ENABLE_IF(is_compiled_string<S>::value)>
 FMT_CONSTEXPR20 auto formatted_size(const S& fmt, T&&... args) -> size_t {
-  auto buf = detail::counting_buffer<>();
-  fmt::format_to(appender(buf), fmt, std::forward<T>(args)...);
-  return buf.count();
+    throw std::runtime_error("STUB: not implemented");
 }
 
 template <typename S, typename... T,
           FMT_ENABLE_IF(is_compiled_string<S>::value)>
 void print(std::FILE* f, const S& fmt, T&&... args) {
-  auto buf = memory_buffer();
-  fmt::format_to(appender(buf), fmt, std::forward<T>(args)...);
-  detail::print(f, {buf.data(), buf.size()});
+    throw std::runtime_error("STUB: not implemented");
 }
 
 template <typename S, typename... T,
           FMT_ENABLE_IF(is_compiled_string<S>::value)>
 void print(const S& fmt, T&&... args) {
-  print(stdout, fmt, std::forward<T>(args)...);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 template <size_t N> class static_format_result {
@@ -569,11 +564,15 @@ template <size_t N> class static_format_result {
   template <typename S, typename... T,
             FMT_ENABLE_IF(is_compiled_string<S>::value)>
   explicit FMT_CONSTEXPR static_format_result(const S& fmt, T&&... args) {
-    *fmt::format_to(data, fmt, std::forward<T>(args)...) = '\0';
-  }
+    return {};
+}
 
-  FMT_CONSTEXPR auto str() const -> fmt::string_view { return {data, N - 1}; }
-  FMT_CONSTEXPR auto c_str() const -> const char* { return data; }
+  FMT_CONSTEXPR auto str() const -> fmt::string_view {
+    return {};
+}
+  FMT_CONSTEXPR auto c_str() const -> const char* {
+    return {};
+}
 };
 
 /**

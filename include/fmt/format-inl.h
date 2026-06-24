@@ -1,3 +1,5 @@
+#include <stdexcept>
+#include <cstdlib>
 // Formatting library for C++ - implementation
 //
 // Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors
@@ -47,10 +49,7 @@ FMT_BEGIN_NAMESPACE
 
 #ifndef FMT_CUSTOM_ASSERT_FAIL
 FMT_FUNC void assert_fail(const char* file, int line, const char* message) {
-  // Use unchecked std::fprintf to avoid triggering another assertion when
-  // writing to stderr fails.
-  std::fprintf(stderr, "%s:%d: assertion failed: %s", file, line, message);
-  abort();
+    throw std::runtime_error("STUB: not implemented");
 }
 #endif
 
@@ -73,20 +72,13 @@ template <typename Facet> Facet use_facet(locale) { return {}; }
 #endif  // FMT_USE_LOCALE
 
 template <typename Locale> auto locale_ref::get() const -> Locale {
-  using namespace detail;
-  static_assert(std::is_same<Locale, locale>::value, "");
-#if FMT_USE_LOCALE
-  if (locale_) return *static_cast<const locale*>(locale_);
-#endif
-  return locale();
+    throw std::runtime_error("STUB: not implemented");
 }
 
 namespace detail {
 
 FMT_FUNC auto allocate(size_t size) -> void* {
-  void* p = malloc(size);
-  if (!p) FMT_THROW(std::bad_alloc());
-  return p;
+    throw std::runtime_error("STUB: not implemented");
 }
 
 FMT_FUNC void format_error_code(detail::buffer<char>& out, int error_code,
@@ -154,21 +146,13 @@ FMT_FUNC auto write_loc(appender out, loc_value value,
 }  // namespace detail
 
 FMT_FUNC void report_error(const char* message) {
-#if FMT_MSC_VERSION || defined(__NVCC__)
-  // Silence unreachable code warnings in MSVC and NVCC because these
-  // are nearly impossible to fix in a generic code.
-  volatile bool b = true;
-  if (!b) return;
-#endif
-  FMT_THROW(format_error(message));
+    throw std::runtime_error("STUB: not implemented");
 }
 
 template <typename Locale> typename Locale::id format_facet<Locale>::id;
 
 template <typename Locale> format_facet<Locale>::format_facet(Locale& loc) {
-  auto& np = detail::use_facet<detail::numpunct<char>>(loc);
-  grouping_ = np.grouping();
-  if (!grouping_.empty()) separator_ = std::string(1, np.thousands_sep());
+    throw std::runtime_error("STUB: not implemented");
 }
 
 #if FMT_USE_LOCALE
@@ -1424,18 +1408,7 @@ template <> struct formatter<detail::bigint> {
 };
 
 FMT_FUNC detail::utf8_to_utf16::utf8_to_utf16(string_view s) {
-  for_each_codepoint(s, [this](uint32_t cp, string_view) {
-    if (cp == invalid_code_point) FMT_THROW(std::runtime_error("invalid utf8"));
-    if (cp <= 0xFFFF) {
-      buffer_.push_back(static_cast<wchar_t>(cp));
-    } else {
-      cp -= 0x10000;
-      buffer_.push_back(static_cast<wchar_t>(0xD800 + (cp >> 10)));
-      buffer_.push_back(static_cast<wchar_t>(0xDC00 + (cp & 0x3FF)));
-    }
-    return true;
-  });
-  buffer_.push_back(0);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 FMT_FUNC void format_system_error(detail::buffer<char>& out, int error_code,

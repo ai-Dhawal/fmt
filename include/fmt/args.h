@@ -1,3 +1,5 @@
+#include <stdexcept>
+#include <cstdlib>
 // Formatting library for C++ - dynamic argument lists
 //
 // Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors
@@ -23,10 +25,12 @@ template <typename T> struct is_reference_wrapper : std::false_type {};
 template <typename T>
 struct is_reference_wrapper<std::reference_wrapper<T>> : std::true_type {};
 
-template <typename T> auto unwrap(const T& v) -> const T& { return v; }
+template <typename T> auto unwrap(const T& v) -> const T& {
+    throw std::runtime_error("STUB: not implemented");
+}
 template <typename T>
 auto unwrap(const std::reference_wrapper<T>& v) -> const T& {
-  return static_cast<const T&>(v);
+    throw std::runtime_error("STUB: not implemented");
 }
 
 // node is defined outside dynamic_arg_list to workaround a C2504 bug in MSVC
@@ -45,23 +49,23 @@ class dynamic_arg_list {
     T value;
 
     template <typename Arg>
-    FMT_CONSTEXPR typed_node(const Arg& arg) : value(arg) {}
+    FMT_CONSTEXPR typed_node(const Arg& arg) : value(arg) {
+    return {};
+}
 
     template <typename Char>
     FMT_CONSTEXPR typed_node(const basic_string_view<Char>& arg)
-        : value(arg.data(), arg.size()) {}
+        : value(arg.data(), arg.size()) {
+    return {};
+}
   };
 
   std::unique_ptr<node<>> head_;
 
  public:
   template <typename T, typename Arg> auto push(const Arg& arg) -> const T& {
-    auto new_node = std::unique_ptr<typed_node<T>>(new typed_node<T>(arg));
-    auto& value = new_node->value;
-    new_node->next = std::move(head_);
-    head_ = std::move(new_node);
-    return value;
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 };
 }  // namespace detail
 
@@ -106,34 +110,23 @@ FMT_EXPORT template <typename Context> class dynamic_format_arg_store {
   friend class basic_format_args<Context>;
 
   auto data() const -> const basic_format_arg<Context>* {
-    return named_info_.empty() ? data_.data() : data_.data() + 1;
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   template <typename T> void emplace_arg(const T& arg) {
-    data_.emplace_back(arg);
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   template <typename T> void emplace_arg(const named_arg<T, char_type>& arg) {
-    if (named_info_.empty())
-      data_.insert(data_.begin(), basic_format_arg<Context>(nullptr, 0));
-    data_.emplace_back(detail::unwrap(arg.value));
-    auto pop_one = [](std::vector<basic_format_arg<Context>>* data) {
-      data->pop_back();
-    };
-    std::unique_ptr<std::vector<basic_format_arg<Context>>, decltype(pop_one)>
-        guard{&data_, pop_one};
-    named_info_.push_back({arg.name, static_cast<int>(data_.size() - 2u)});
-    data_[0] = {named_info_.data(), named_info_.size()};
-    guard.release();
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
  public:
   constexpr dynamic_format_arg_store() = default;
 
   operator basic_format_args<Context>() const {
-    return basic_format_args<Context>(data(), static_cast<int>(data_.size()),
-                                      !named_info_.empty());
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   /**
    * Adds an argument into the dynamic store for later passing to a formatting
@@ -151,11 +144,8 @@ FMT_EXPORT template <typename Context> class dynamic_format_arg_store {
    *     std::string result = fmt::vformat("{} and {} and {}", store);
    */
   template <typename T> void push_back(const T& arg) {
-    if FMT_CONSTEXPR20 (need_copy<T>::value)
-      emplace_arg(dynamic_args_.push<stored_t<T>>(arg));
-    else
-      emplace_arg(detail::unwrap(arg));
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   /**
    * Adds a reference to the argument into the dynamic store for later passing
@@ -171,11 +161,8 @@ FMT_EXPORT template <typename Context> class dynamic_format_arg_store {
    *     // result == "Rolling Scones"
    */
   template <typename T> void push_back(std::reference_wrapper<T> arg) {
-    static_assert(
-        need_copy<T>::value,
-        "objects of built-in types and string views are always copied");
-    emplace_arg(arg.get());
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   /**
    * Adds named argument into the dynamic store for later passing to a
@@ -183,34 +170,24 @@ FMT_EXPORT template <typename Context> class dynamic_format_arg_store {
    * copying of the argument. The name is always copied into the store.
    */
   template <typename T> void push_back(const named_arg<T, char_type>& arg) {
-    const char_type* arg_name =
-        dynamic_args_.push<std::basic_string<char_type>>(arg.name).c_str();
-    if FMT_CONSTEXPR20 (need_copy<T>::value) {
-      emplace_arg(
-          fmt::arg(arg_name, dynamic_args_.push<stored_t<T>>(arg.value)));
-    } else {
-      emplace_arg(fmt::arg(arg_name, arg.value));
-    }
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   /// Erase all elements from the store.
   void clear() {
-    data_.clear();
-    named_info_.clear();
-    dynamic_args_ = {};
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   /// Reserves space to store at least `new_cap` arguments including
   /// `new_cap_named` named arguments.
   void reserve(size_t new_cap, size_t new_cap_named) {
-    FMT_ASSERT(new_cap >= new_cap_named,
-               "set of arguments includes set of named arguments");
-    data_.reserve(new_cap);
-    named_info_.reserve(new_cap_named);
-  }
+    throw std::runtime_error("STUB: not implemented");
+}
 
   /// Returns the number of elements in the store.
-  auto size() const noexcept -> size_t { return data_.size(); }
+  auto size() const noexcept -> size_t {
+    abort();
+}
 };
 
 FMT_END_NAMESPACE
